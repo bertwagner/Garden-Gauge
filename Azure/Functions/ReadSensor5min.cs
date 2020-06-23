@@ -31,10 +31,32 @@ namespace GardenGauge.Function
 
             //TableOperation retrieve = TableOperation.Retrieve<dynamic>(partitionKey, rowKey);
 
+            //TableQuery<SensorReading> query = new TableQuery<SensorReading>();
+                    //.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, "LightSensor_1__Resolution_300__Date_2020-06-20__Hour_21"))
+                    //.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.LessThan, "LightSensor_1__Resolution_60"));
+
+            // Create a filter condition where the partition key is "Smith".
+            String partitionFilter = TableQuery.GenerateFilterCondition(
+                "PartitionKey",
+                QueryComparisons.GreaterThanOrEqual,
+                "LightSensor_1__Resolution_300__Date_2020-06-20__Hour_21");
+
+            // Create a filter condition where the row key is less than the letter "E".
+            String rowFilter = TableQuery.GenerateFilterCondition(
+                "PartitionKey",
+                QueryComparisons.LessThan,
+                "LightSensor_1__Resolution_60");
+
+            // Combine the two conditions into a filter expression.
+            String combinedFilter = TableQuery.CombineFilters(partitionFilter,
+                TableOperators.And, rowFilter);
+
+            // Specify a range query, using "Smith" as the partition key,
+            // with the row key being up to the letter "E".
             TableQuery<SensorReading> query = new TableQuery<SensorReading>()
-                    .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, "LightSensor_1__Resolution_300__Date_2020-06-17__Hour_19"))
-                    .Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.LessThan, "LightSensor_1__Resolution_60"));
-                        
+                    .Where(combinedFilter);
+                       
+
             int messageCounter = 0;
             foreach (SensorReading message in table.ExecuteQuery(query))
             {
