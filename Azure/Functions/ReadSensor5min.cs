@@ -21,38 +21,24 @@ namespace GardenGauge.Function
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
+            // Documentation - these java examples are more helpful than the .NET examples: https://docs.microsoft.com/en-us/azure/cosmos-db/table-storage-how-to-use-java
             CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
-                     
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
-
-
-            // Create or reference an existing table
             CloudTable table = tableClient.GetTableReference("SensorReading");
 
-            //TableOperation retrieve = TableOperation.Retrieve<dynamic>(partitionKey, rowKey);
-
-            //TableQuery<SensorReading> query = new TableQuery<SensorReading>();
-                    //.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, "LightSensor_1__Resolution_300__Date_2020-06-20__Hour_21"))
-                    //.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.LessThan, "LightSensor_1__Resolution_60"));
-
-            // Create a filter condition where the partition key is "Smith".
-            String partitionFilter = TableQuery.GenerateFilterCondition(
+            String filter1 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.GreaterThanOrEqual,
                 "LightSensor_1__Resolution_300__Date_2020-06-20__Hour_21");
 
-            // Create a filter condition where the row key is less than the letter "E".
-            String rowFilter = TableQuery.GenerateFilterCondition(
+            String filter2 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.LessThan,
                 "LightSensor_1__Resolution_60");
 
-            // Combine the two conditions into a filter expression.
-            String combinedFilter = TableQuery.CombineFilters(partitionFilter,
-                TableOperators.And, rowFilter);
+            String combinedFilter = TableQuery.CombineFilters(filter1,
+                TableOperators.And, filter2);
 
-            // Specify a range query, using "Smith" as the partition key,
-            // with the row key being up to the letter "E".
             TableQuery<SensorReading> query = new TableQuery<SensorReading>()
                     .Where(combinedFilter);
                        
@@ -66,12 +52,7 @@ namespace GardenGauge.Function
 
             string ts="";
 
-            /*TableOperation retrieveOperation = TableOperation.Retrieve<SensorReading>("LightSensor__2020-05-24__5min", "Hour_00");
-            TableResult result = await table.ExecuteAsync(retrieveOperation);
-            SensorReading sensorData = result.Result as SensorReading;
-            
-
-
+            /*
             string name = req.Query["name"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
