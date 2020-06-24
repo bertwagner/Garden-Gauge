@@ -18,7 +18,7 @@ namespace GardenGauge.Function
 
         [FunctionName("ReadSensor5min")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
             ILogger log)
         {
             // Documentation - these java examples are more helpful than the .NET examples: https://docs.microsoft.com/en-us/azure/cosmos-db/table-storage-how-to-use-java
@@ -26,42 +26,37 @@ namespace GardenGauge.Function
             CloudTableClient tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
             CloudTable table = tableClient.GetTableReference("SensorReading");
 
+            // Default parameter values
+            string startDate = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd");
+            string startHour = DateTime.Now.Hour.ToString().PadLeft(2,'0');
+            string stopDate = DateTime.Now.ToString("yyyy-MM-dd");
+            string stopHour = startHour;
+
+            // Passed in parameter values
+            startDate = req.Query["start_date"].ToString() != "" ?  req.Query["start_date"].ToString() : startDate;
+            startHour = req.Query["start_hour"].ToString().PadLeft(2,'0') ?? startHour;
+            stopDate = req.Query["stop_date"].ToString() != "" ? req.Query["stop_date"].ToString() : stopDate;
+            stopHour = req.Query["stop_hour"].ToString().PadLeft(2,'0') ?? stopHour;
+
             String filter1 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.GreaterThanOrEqual,
-                "LightSensor_1__Resolution_300__Date_2020-06-20__Hour_21");
+                String.Format("LightSensor_1__Resolution_300__Date_{0}__Hour_{1}",startDate,startHour));
 
             String filter2 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.LessThan,
-                "LightSensor_1__Resolution_60");
+                String.Format("LightSensor_1__Resolution_300__Date_{0}__Hour_{1}",stopDate,stopHour));
 
             String combinedFilter = TableQuery.CombineFilters(filter1,
                 TableOperators.And, filter2);
 
             TableQuery<SensorReading> query = new TableQuery<SensorReading>()
                     .Where(combinedFilter);
-                       
 
-            int messageCounter = 0;
-            foreach (SensorReading message in table.ExecuteQuery(query))
-            {
-                Console.WriteLine(message.PartitionKey);
-                messageCounter++;
-            }
+            IEnumerable<SensorReading> results = table.ExecuteQuery<SensorReading>(query);
 
-            string ts="";
-
-            /*
-            string name = req.Query["name"];
-
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            name = name ?? data?.name;
-
-            string responseMessage = $"Sensor details: {JsonConvert.SerializeObject(sensorData.SensorDetail)}";
-*/
-            return new OkObjectResult("");
+            return new OkObjectResult(JsonConvert.SerializeObject(results));
         }
     }
 }
