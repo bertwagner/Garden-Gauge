@@ -51,8 +51,11 @@ namespace GardenGauge.Function
             String combinedFilter = TableQuery.CombineFilters(filter1,
                 TableOperators.And, filter2);
 
+            int maxResultCount = 12*24*3; // 3 days of data
             TableQuery<SensorReading> query = new TableQuery<SensorReading>()
-                    .Where(combinedFilter);
+                    .Where(combinedFilter)
+                    //.Select(new List<string>{"Value","Units","DataType","Timestamp"})
+                    .Take(maxResultCount);
 
             IEnumerable<SensorReading> results = table.ExecuteQuery<SensorReading>(query);
 
