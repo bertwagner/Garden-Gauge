@@ -33,14 +33,15 @@ namespace GardenGauge.Function
             string startHour = DateTime.UtcNow.Hour.ToString().PadLeft(2,'0');
             string stopDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
             string stopHour = startHour;
+            int maxResultCount = 12*24*3; // 3 days of data
 
             // Passed in parameter values
             sensorName = req.Query["sensor_name"].ToString() != "" ? req.Query["sensor_name"].ToString() : sensorName;
             sensorId = req.Query["sensor_id"].ToString() != "" ? req.Query["sensor_id"].ToString() : sensorId;
             startDate = req.Query["start_date"].ToString() != "" ?  req.Query["start_date"].ToString() : startDate;
-            startHour = req.Query["start_hour"].ToString().PadLeft(2,'0') ?? startHour;
+            startHour = req.Query["start_hour"].ToString() != "" ? req.Query["start_hour"].ToString().PadLeft(2,'0') : startHour;
             stopDate = req.Query["stop_date"].ToString() != "" ? req.Query["stop_date"].ToString() : stopDate;
-            stopHour = req.Query["stop_hour"].ToString().PadLeft(2,'0') ?? stopHour;
+            stopHour = req.Query["stop_hour"].ToString() != "" ? req.Query["stop_hour"].ToString().PadLeft(2,'0') : stopHour;
 
             String filter1 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
@@ -55,7 +56,7 @@ namespace GardenGauge.Function
             String combinedFilter = TableQuery.CombineFilters(filter1,
                 TableOperators.And, filter2);
 
-            int maxResultCount = 12*24*3; // 3 days of data
+            
             TableQuery<SensorReading> query = new TableQuery<SensorReading>()
                     .Where(combinedFilter)
                     //.Select(new List<string>{"Value","Units","DataType","Timestamp"})
