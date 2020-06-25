@@ -27,12 +27,16 @@ namespace GardenGauge.Function
             CloudTable table = tableClient.GetTableReference("SensorReading");
 
             // Default parameter values
+            string sensorName = "LightSensor";
+            string sensorId = "1";
             string startDate = DateTime.UtcNow.AddDays(-3).ToString("yyyy-MM-dd");
             string startHour = DateTime.UtcNow.Hour.ToString().PadLeft(2,'0');
             string stopDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
             string stopHour = startHour;
 
             // Passed in parameter values
+            sensorName = req.Query["sensor_name"].ToString() != "" ? req.Query["sensor_name"].ToString() : sensorName;
+            sensorId = req.Query["sensor_id"].ToString() != "" ? req.Query["sensor_id"].ToString() : sensorId;
             startDate = req.Query["start_date"].ToString() != "" ?  req.Query["start_date"].ToString() : startDate;
             startHour = req.Query["start_hour"].ToString().PadLeft(2,'0') ?? startHour;
             stopDate = req.Query["stop_date"].ToString() != "" ? req.Query["stop_date"].ToString() : stopDate;
@@ -41,12 +45,12 @@ namespace GardenGauge.Function
             String filter1 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.GreaterThanOrEqual,
-                String.Format("LightSensor_1__Resolution_300__Date_{0}__Hour_{1}",startDate,startHour));
+                String.Format("{0}_{1}__Resolution_300__Date_{2}__Hour_{3}",sensorName,sensorId,startDate,startHour));
 
             String filter2 = TableQuery.GenerateFilterCondition(
                 "PartitionKey",
                 QueryComparisons.LessThan,
-                String.Format("LightSensor_1__Resolution_300__Date_{0}__Hour_{1}",stopDate,stopHour));
+                String.Format("{0}_{1}__Resolution_300__Date_{2}__Hour_{3}",sensorName,sensorId,stopDate,stopHour));
 
             String combinedFilter = TableQuery.CombineFilters(filter1,
                 TableOperators.And, filter2);
