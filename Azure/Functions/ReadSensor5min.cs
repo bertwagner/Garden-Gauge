@@ -27,9 +27,9 @@ namespace GardenGauge.Function
             CloudTable table = tableClient.GetTableReference("SensorReading");
 
             // Default parameter values
-            string startDate = DateTime.Now.AddDays(-3).ToString("yyyy-MM-dd");
-            string startHour = DateTime.Now.Hour.ToString().PadLeft(2,'0');
-            string stopDate = DateTime.Now.ToString("yyyy-MM-dd");
+            string startDate = DateTime.UtcNow.AddDays(-3).ToString("yyyy-MM-dd");
+            string startHour = DateTime.UtcNow.Hour.ToString().PadLeft(2,'0');
+            string stopDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
             string stopHour = startHour;
 
             // Passed in parameter values
