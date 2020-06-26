@@ -2,6 +2,8 @@ MIT License
 
 Copyright for Arduino_LSM6DS3 are held by Arduino SA as part of the Arduino_LSM6DS3 library under the GNU Lesser General Public License: https://github.com/arduino-libraries/Arduino_LSM6DS3
 
+Copyright for Chart.js are held by 2019 Chart.js Contributors as part of the Chart.js library under the MIT License: https://www.chartjs.org/
+
 Copyright (c) 2020 Bert Wagner
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
